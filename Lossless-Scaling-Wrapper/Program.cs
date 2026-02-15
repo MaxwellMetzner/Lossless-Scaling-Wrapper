@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 static class Program
 {
@@ -21,15 +22,31 @@ static class Program
         if (gameArgs.Length == 0)
             return 1;
 
-        TryStartLosslessScalingMinimized();
+        // Allow ourselves to set foreground later (best-effort).
+        AllowSetForegroundWindow(-1);
 
-        // Start game and wait so Steam tracks the play session.
+        // Start Lossless Scaling first.
+        var lsProc = StartLosslessScaling();
+
+        // Start game.
         var gameExe = gameArgs[0];
         var gameExeArgs = gameArgs[1..];
 
-        using var process = StartProcess(gameExe, gameExeArgs, SafeWorkingDir(gameExe));
-        process.WaitForExit();
-        return process.ExitCode;
+        using var gameProc = StartProcess(gameExe, gameExeArgs, SafeWorkingDir(gameExe));
+
+        // As soon as LS has a window, minimize it without activation.
+        if (lsProc is not null)
+            MinimizeNoActivate(lsProc);
+
+        // Once the game has a window, bring it to front.
+        BringToFront(gameProc);
+
+        // Optional: re-assert focus in case LS steals it a moment later.
+        Thread.Sleep(250);
+        BringToFront(gameProc);
+
+        gameProc.WaitForExit();
+        return gameProc.ExitCode;
     }
 
     // ── Argument helpers ────────────────────────────────────────────────
@@ -134,32 +151,30 @@ static class Program
     private static string ResolveLosslessScalingPath()
         => Environment.GetEnvironmentVariable(EnvKey) ?? DefaultLosslessScalingPath;
 
-    /// <summary>
-    /// Launches Lossless Scaling minimized if a valid path is configured.
-    /// Silently skips when the path is a placeholder, missing, or empty.
-    /// </summary>
-    private static void TryStartLosslessScalingMinimized()
+    private static Process? StartLosslessScaling()
     {
         var path = ResolveLosslessScalingPath();
 
         if (string.IsNullOrWhiteSpace(path) || path == PlaceholderPath)
-            return;
+            return null;
 
         if (!File.Exists(path))
-            return;
+            return null;
 
         try
         {
-            Process.Start(new ProcessStartInfo
+            // UseShellExecute=false gives a more direct process handle on Windows.
+            var p = Process.Start(new ProcessStartInfo
             {
                 FileName = path,
-                UseShellExecute = true,
-                WindowStyle = ProcessWindowStyle.Minimized,
+                UseShellExecute = false,
             });
+
+            return p;
         }
         catch
         {
-            // Non-critical — don't block game launch.
+            return null;
         }
     }
 
@@ -192,5 +207,51 @@ static class Program
         {
             return null;
         }
+    }
+
+    // ── Win32 window helpers ────────────────────────────────────────────
+
+    private const int SW_SHOWMINNOACTIVE = 7;
+    private const int SW_RESTORE = 9;
+
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern bool AllowSetForegroundWindow(int dwProcessId);
+
+    private static IntPtr WaitForMainWindow(Process p, int timeoutMs)
+    {
+        var sw = Stopwatch.StartNew();
+        while (sw.ElapsedMilliseconds < timeoutMs)
+        {
+            p.Refresh();
+            if (p.HasExited) return IntPtr.Zero;
+
+            var h = p.MainWindowHandle;
+            if (h != IntPtr.Zero) return h;
+
+            Thread.Sleep(50);
+        }
+        return IntPtr.Zero;
+    }
+
+    private static void MinimizeNoActivate(Process p, int timeoutMs = 8000)
+    {
+        var h = WaitForMainWindow(p, timeoutMs);
+        if (h != IntPtr.Zero)
+            ShowWindow(h, SW_SHOWMINNOACTIVE);
+    }
+
+    private static void BringToFront(Process p, int timeoutMs = 20000)
+    {
+        var h = WaitForMainWindow(p, timeoutMs);
+        if (h == IntPtr.Zero) return;
+
+        ShowWindow(h, SW_RESTORE);
+        SetForegroundWindow(h);
     }
 }
