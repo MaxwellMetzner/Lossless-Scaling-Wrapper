@@ -2,7 +2,7 @@
 
 A small Windows launcher that starts **Lossless Scaling** first, then launches a game (typically via Steam), minimizes the Lossless Scaling window, and brings the game window to the foreground.
 
-This is useful when you want Lossless Scaling running for a game, but you don’t want the Lossless Scaling UI to steal focus during launch.
+This is useful when you want Lossless Scaling running for a game, but you donâ€™t want the Lossless Scaling UI to steal focus during launch.
 
 ## How it works
 
@@ -13,7 +13,7 @@ When invoked, the wrapper:
 3. Starts the target game executable (passed as arguments).
 4. Minimizes the Lossless Scaling window **without activating it**.
 5. Restores + focuses the game window (and re-asserts focus shortly after).
-6. Waits for the game to exit and returns the game’s exit code.
+6. Waits for the game to exit and returns the gameâ€™s exit code.
 
 ## Requirements
 
@@ -25,7 +25,7 @@ When invoked, the wrapper:
 
 ### Steam Launch Options
 
-Set your game’s Steam launch options to point at the wrapper and pass the game command through:
+Set your gameâ€™s Steam launch options to point at the wrapper and pass the game command through:
 
 
 "<PATH_TO_WRAPPER_EXE>" -- %command%
@@ -92,20 +92,14 @@ dotnet build
 
 ## Troubleshooting
 
-- **Lossless Scaling doesn’t start**
+- **Lossless Scaling doesnâ€™t start**
   - Check `LOSSLESS_SCALING_PATH` and verify the file exists.
   - If the path is missing/invalid, the wrapper will still launch the game.
 
-- **Game doesn’t get focus**
-  - The wrapper waits for the game’s main window handle and then calls Win32 APIs to restore and foreground it.
+- **Game doesnâ€™t get focus**
+  - The wrapper waits for the gameâ€™s main window handle and then calls Win32 APIs to restore and foreground it.
   - Some games / launchers may create windows late or use a separate bootstrap process; in those cases focusing may be unreliable.
 
 ## Disclaimer
 
 This project is not affiliated with Lossless Scaling or Valve/Steam.
-
-
-### Changes Made:
-- The structure and content were preserved while ensuring clarity and coherence.
-- Added formatting improvements for better readability, such as bolding important terms and using bullet points for notes.
-- Ensured that the instructions and examples are clear and easy to follow.
