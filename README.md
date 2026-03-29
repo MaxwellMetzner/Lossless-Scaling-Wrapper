@@ -1,64 +1,96 @@
 # Lossless Scaling Wrapper
 
-Small Windows launcher for starting Lossless Scaling before a game, then minimizing Lossless Scaling and returning focus to the game window.
+A lightweight Windows launcher that ensures **Lossless Scaling** starts before your game, then minimizes it and restores focus to the game window.
 
-It is mainly useful for Steam launch options when you want Lossless Scaling open, but do not want its window interrupting the game launch.
+This is primarily intended for use with **Steam launch options**, allowing Lossless Scaling to run automatically without interrupting gameplay.
 
-## Best results
+---
 
-This works best when the game already has a profile configured in Lossless Scaling. That lets Lossless Scaling apply the profile automatically as soon as it starts.
+## ⚠️ Required Setup (Steam Launch Options)
 
-## What it does
+After downloading the `.exe`, **this step is mandatory for every game you want to use with the wrapper**.
 
-1. Optionally loads environment variables from a local `.env` file.
-2. Starts `LosslessScaling.exe` if it can find it.
-3. Starts the game command passed to the wrapper.
-4. Minimizes the Lossless Scaling window without activating it.
-5. Brings the game window to the foreground.
-6. Waits for the game to exit and returns the same exit code.
+For each game:
+
+1. Open Steam
+2. Go to your Library
+3. Right-click the game → Properties
+4. Under General, find Launch Options
+5. Enter the following:
+
+```text
+"<Path to wrapper exe> ... \Lossless-Scaling-Wrapper.exe" -- %command%
+```
+
+### Important
+
+- The quotes (" ") MUST wrap the full path to the wrapper executable
+- Replace the path above with your actual `.exe` location
+- The `-- %command%` portion MUST remain exactly as written
+- This must be configured per game — there is NO global setting in Steam
+
+---
+
+## Best Results
+
+For optimal behavior:
+
+- Configure a profile for the game inside Lossless Scaling
+- Lossless Scaling will automatically apply the profile on launch
+
+---
+
+## What It Does
+
+1. Optionally loads environment variables from a `.env` file  
+2. Starts `LosslessScaling.exe` (if found)  
+3. Launches the game via Steam (`%command%`)  
+4. Minimizes the Lossless Scaling window (without stealing focus)  
+5. Brings the game window to the foreground  
+6. Waits for the game to exit and returns its exit code  
+
+---
 
 ## Requirements
 
-- Windows
-- .NET 8
-- Lossless Scaling installed and accessible on disk
+- Windows  
+- .NET 8  
+- Lossless Scaling installed locally  
 
-## Usage
+---
 
-For Steam launch options:
+## Direct Usage (Optional)
 
-```text
-"<PATH_TO_WRAPPER_EXE>" -- %command%
-```
-
-You can also run it directly:
+You can run the wrapper manually:
 
 ```text
 Lossless-Scaling-Wrapper.exe -- "C:\Path\To\Game.exe" -arg1 -arg2
 ```
 
-If no game executable is provided, the wrapper exits with code `1`.
+If no game is provided, the wrapper exits with code `1`.
+
+---
 
 ## Configuration
 
-By default, the wrapper looks for Lossless Scaling here:
+Default Lossless Scaling path:
 
 ```text
 C:\Program Files (x86)\Steam\steamapps\common\Lossless Scaling\LosslessScaling.exe
 ```
 
-To override that path, set `LOSSLESS_SCALING_PATH` as a system environment variable or in a local `.env` file.
-
-The wrapper checks for `.env` in these locations:
-
-1. Next to the wrapper executable
-2. The current working directory
-
-Example:
+Override using environment variable:
 
 ```text
-LOSSLESS_SCALING_PATH="C:\Program Files (x86)\Steam\steamapps\common\Lossless Scaling\LosslessScaling.exe"
+LOSSLESS_SCALING_PATH="C:\Custom\Path\LosslessScaling.exe"
 ```
+
+`.env` lookup order:
+
+1. Same directory as the wrapper `.exe`
+2. Current working directory
+
+---
 
 ## Build
 
@@ -66,11 +98,15 @@ LOSSLESS_SCALING_PATH="C:\Program Files (x86)\Steam\steamapps\common\Lossless Sc
 dotnet build
 ```
 
+---
+
 ## Notes
 
-- If Lossless Scaling cannot be found, the wrapper still launches the game.
-- Focus behavior is best-effort. Some games and launchers create their main window late, so foregrounding may not always be perfect.
+- If Lossless Scaling is not found, the game still launches  
+- Window focus behavior is best-effort and may vary by game/launcher  
+
+---
 
 ## Disclaimer
 
-This project is not affiliated with Lossless Scaling or Valve/Steam.
+Not affiliated with Lossless Scaling or Valve.
