@@ -1,4 +1,6 @@
 /.vs
 /Lossless-Scaling-Wrapper/obj
 /Lossless-Scaling-Wrapper/bin
-Lossless-Scaling-Wrapper/Properties/PublishProfiles/FolderProfile.pubxml.user
+/Lossless-Scaling-Wrapper/.env
+*.csproj.user
+*.pubxml.user

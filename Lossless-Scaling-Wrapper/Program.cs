@@ -7,7 +7,6 @@ static class Program
         @"C:\Program Files (x86)\Steam\steamapps\common\Lossless Scaling\LosslessScaling.exe";
 
     private const string EnvKey = "LOSSLESS_SCALING_PATH";
-    private const string PlaceholderPath = "<LOSSLESS_SCALING_EXE>";
 
     [STAThread]
     public static int Main(string[] args)
@@ -155,7 +154,7 @@ static class Program
     {
         var path = ResolveLosslessScalingPath();
 
-        if (string.IsNullOrWhiteSpace(path) || path == PlaceholderPath)
+        if (string.IsNullOrWhiteSpace(path))
             return null;
 
         if (!File.Exists(path))
