@@ -6,7 +6,7 @@ This is primarily intended for use with **Steam launch options**, allowing Lossl
 
 ---
 
-## ⚠️ Required Setup (Steam Launch Options)
+## Required Setup (Steam Launch Options)
 
 After downloading the `.exe`, **this step is mandatory for every game you want to use with the wrapper**.
 
